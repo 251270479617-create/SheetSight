@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SheetSight</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <div class="custom-cursor" id="customCursor" aria-hidden="true"></div>
+    <main class="app-shell">
+      <section class="workspace">
+        <aside class="panel sidebar">
+          <div class="brand">
+            <div class="mark" id="brandMark">SS</div>
+            <div>
+              <h1 id="brandNameDisplay">SheetSight</h1>
+              <p>Upload, edit, analyze, download.</p>
+            </div>
+          </div>
+
+          <div class="brand-settings">
+            <label>
+              Company Name
+              <input id="companyNameInput" type="text" placeholder="Enter company name" />
+            </label>
+            <label>
+              Company Logo
+              <input id="companyLogoInput" type="file" accept="image/*" />
+            </label>
+          </div>
+
+          <div class="theme-settings">
+            <div class="settings-title">
+              <strong>Theme Studio</strong>
+              <span>Dashboard colours</span>
+            </div>
+            <div class="color-grid">
+              <label>
+                Dashboard
+                <input id="dashboardColorInput" type="color" value="#f3f6fb" />
+              </label>
+              <label>
+                Theme
+                <input id="themeColorInput" type="color" value="#2563eb" />
+              </label>
+              <label>
+                Accent
+                <input id="accentColorInput" type="color" value="#f59e0b" />
+              </label>
+            </div>
+            <div class="theme-presets" aria-label="Theme presets">
+              <button class="theme-preset active" type="button" data-bg="#f3f6fb" data-theme="#2563eb" data-accent="#f59e0b" title="Blue and amber"></button>
+              <button class="theme-preset" type="button" data-bg="#f7f4ef" data-theme="#0f766e" data-accent="#c2410c" title="Teal and clay"></button>
+              <button class="theme-preset" type="button" data-bg="#f5f3ff" data-theme="#7c3aed" data-accent="#db2777" title="Violet and rose"></button>
+              <button class="theme-preset" type="button" data-bg="#f8fafc" data-theme="#334155" data-accent="#16a34a" title="Slate and green"></button>
+            </div>
+          </div>
+
+          <div class="tool-settings">
+            <div class="settings-title">
+              <strong>Data Tools</strong>
+              <span>Filters and mode</span>
+            </div>
+            <label class="switch-row">
+              <input id="darkModeToggle" type="checkbox" />
+              Dark Mode
+            </label>
+            <label>
+              Search
+              <input id="searchInput" type="search" placeholder="Search loaded data" disabled />
+            </label>
+            <label>
+              Date Column
+              <select id="dateColumnSelect" disabled></select>
+            </label>
+            <div class="date-grid">
+              <label>
+                From
+                <input id="startDateInput" type="date" disabled />
+              </label>
+              <label>
+                To
+                <input id="endDateInput" type="date" disabled />
+              </label>
+            </div>
+          </div>
+
+          <div class="tool-settings">
+            <div class="settings-title">
+              <strong>Formula Builder</strong>
+              <span>Example: Sales * Quantity</span>
+            </div>
+            <label>
+              New Column
+              <input id="formulaNameInput" type="text" placeholder="Calculated Total" disabled />
+            </label>
+            <label>
+              Formula
+              <input id="formulaExpressionInput" type="text" placeholder="Sales * Quantity" disabled />
+            </label>
+            <button id="applyFormulaBtn" type="button" disabled>Apply Formula</button>
+          </div>
+
+          <label class="upload-box" for="fileInput">
+            <span class="upload-icon">+</span>
+            <strong>Upload Excel or CSV</strong>
+            <small>.xlsx, .xls, or .csv files</small>
+            <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" />
+          </label>
+
+          <div class="controls">
+            <button id="sampleBtn" type="button">Load Sample Data</button>
+            <button id="addRowBtn" type="button" disabled>Add Row</button>
+            <button id="addColumnBtn" type="button" disabled>Add Column</button>
+            <button id="recommendChartBtn" type="button" disabled>Auto Chart Recommendation</button>
+            <button id="downloadCsvBtn" type="button" disabled>Download CSV</button>
+            <button id="downloadExcelBtn" type="button" disabled>Download Excel</button>
+            <button id="downloadDashboardBtn" type="button" disabled>Download Dashboard</button>
+            <button id="exportPdfBtn" type="button" disabled>Export PDF</button>
+            <button id="saveProjectBtn" type="button" disabled>Save Project</button>
+            <select id="savedProjectSelect" disabled>
+              <option value="">Load saved project</option>
+            </select>
+            <button id="shareDashboardBtn" type="button" disabled>Share Dashboard</button>
+          </div>
+
+          <div class="status" id="status">No file loaded yet.</div>
+        </aside>
+
+        <section class="content">
+          <div class="toolbar">
+            <div>
+              <h2 id="datasetTitle">No Dataset</h2>
+              <p id="datasetMeta">Upload a file to generate charts and editable data.</p>
+            </div>
+            <div class="selector-row">
+              <label>
+                Category
+                <select id="categorySelect" disabled></select>
+              </label>
+              <label>
+                Value
+                <select id="valueSelect" disabled></select>
+              </label>
+            </div>
+          </div>
+
+          <section class="metrics" aria-label="Dashboard metrics">
+            <div class="metric dashboard-widget" draggable="true" data-widget="rows">
+              <span>Rows</span>
+              <strong id="rowCount">0</strong>
+            </div>
+            <div class="metric dashboard-widget" draggable="true" data-widget="columns">
+              <span>Columns</span>
+              <strong id="columnCount">0</strong>
+            </div>
+            <div class="metric dashboard-widget" draggable="true" data-widget="numeric">
+              <span>Numeric Columns</span>
+              <strong id="numericCount">0</strong>
+            </div>
+            <div class="metric dashboard-widget" draggable="true" data-widget="total">
+              <span>Total Value</span>
+              <strong id="totalValue">0</strong>
+            </div>
+          </section>
+
+          <section class="insight-grid">
+            <div class="chart-panel dashboard-widget" draggable="true" data-widget="insights">
+              <div class="section-heading">
+                <h3>AI Insights</h3>
+                <p id="insightHint">Load data to generate quick insights.</p>
+              </div>
+              <ul class="insight-list" id="insightList">
+                <li>No insights yet.</li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="charts">
+            <div class="chart-panel dashboard-widget" draggable="true" data-widget="summary-chart">
+              <div class="section-heading">
+                <h3>Category Summary</h3>
+                <p id="barChartHint">Choose columns to compare totals.</p>
+              </div>
+              <canvas id="barChart" height="120"></canvas>
+            </div>
+            <div class="chart-panel dashboard-widget" draggable="true" data-widget="numeric-chart">
+              <div class="section-heading">
+                <h3>Numeric Overview</h3>
+                <p>Totals by numeric column.</p>
+              </div>
+              <canvas id="columnChart" height="120"></canvas>
+            </div>
+          </section>
+
+          <section class="chart-panel dashboard-widget" draggable="true" data-widget="custom-chart">
+            <div class="section-heading stacked-heading">
+              <div>
+                <h3>Custom Chart</h3>
+                <p>Pick any column values and change the chart style.</p>
+              </div>
+              <div class="selector-row">
+                <label>
+                  Label Column
+                  <select id="customLabelSelect" disabled></select>
+                </label>
+                <label>
+                  Value Column
+                  <select id="customValueSelect" disabled></select>
+                </label>
+                <label>
+                  Chart Type
+                  <select id="customChartType" disabled>
+                    <option value="bar">Bar</option>
+                    <option value="line">Line</option>
+                    <option value="pie">Pie</option>
+                    <option value="doughnut">Doughnut</option>
+                    <option value="polarArea">Polar Area</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            <canvas id="customChart" height="120"></canvas>
+          </section>
+
+          <section class="chart-panel dashboard-widget" draggable="true" data-widget="forecast">
+            <div class="section-heading">
+              <div>
+                <h3>Forecasting</h3>
+                <p id="forecastHint">Forecast uses the selected value column.</p>
+              </div>
+            </div>
+            <canvas id="forecastChart" height="100"></canvas>
+          </section>
+
+          <section class="table-section">
+            <div class="section-heading">
+              <h3>Editable Data</h3>
+              <p>Click any cell to change values. Add rows or columns from the left panel.</p>
+            </div>
+            <div class="table-wrap">
+              <table id="dataTable">
+                <thead></thead>
+                <tbody>
+                  <tr>
+                    <td class="empty-state">Upload a spreadsheet to begin.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
